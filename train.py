@@ -17,15 +17,6 @@ import homogeneous_data
 
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
-import utils
-import layers
-import optim
-import model
-import vocab
-import tools
-import evaluation
-import datasets
-
 from utils import *
 from layers import get_layer, param_init_fflayer, fflayer, param_init_gru, gru_layer
 from optim import adam
