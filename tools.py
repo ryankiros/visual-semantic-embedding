@@ -17,10 +17,10 @@ from model import init_params, build_sentence_encoder, build_image_encoder
 #-----------------------------------------------------------------------------#
 # Specify model location here
 #-----------------------------------------------------------------------------#
-path_to_model = '/ais/gobi3/u/rkiros/uvsmodels/coco.npz'
+default_model = '/ais/gobi3/u/rkiros/uvsmodels/coco.npz'
 #-----------------------------------------------------------------------------#
 
-def load_model():
+def load_model(path_to_model=default_model):
     """
     Load all model components
     """
