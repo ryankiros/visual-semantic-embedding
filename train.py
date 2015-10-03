@@ -32,7 +32,6 @@ def trainer(data='coco',  #f8k, f30k, coco
             dim=1024,
             dim_image=4096,
             dim_word=300,
-            ncon=100,
             encoder='gru',
             max_epochs=15,
             dispFreq=10,
@@ -52,7 +51,6 @@ def trainer(data='coco',  #f8k, f30k, coco
     model_options['dim'] = dim
     model_options['dim_image'] = dim_image
     model_options['dim_word'] = dim_word
-    model_options['ncon'] = ncon
     model_options['encoder'] = encoder
     model_options['max_epochs'] = max_epochs
     model_options['dispFreq'] = dispFreq
@@ -176,15 +174,9 @@ def trainer(data='coco',  #f8k, f30k, coco
                 uidx -= 1
                 continue
 
-            # Construct some contrastive examples
-            con = numpy.zeros((ncon, x.shape[1]))
-            for i in range(ncon):
-                con[i] = numpy.roll(numpy.arange(x.shape[1]), i+1)
-            con = con.astype('int64')
-
             # Update
             ud_start = time.time()
-            cost = f_grad_shared(x, mask, im, con)
+            cost = f_grad_shared(x, mask, im)
             f_update(lrate)
             ud = time.time() - ud_start
 
