@@ -3,6 +3,7 @@ Model specification
 """
 import theano
 import theano.tensor as tensor
+from theano.tensor.extra_ops import fill_diagonal
 import numpy
 
 from collections import OrderedDict
@@ -29,29 +30,24 @@ def init_params(options):
 
     return params
 
-def contrastive_loss(margin, im, s, cim, cs):
+def contrastive_loss(margin, im, s):
     """
     Compute contrastive loss
     """
-    cost_im = margin - (im * s).sum(axis=1) + (im * cs).sum(axis=1)
-    cost_im = cost_im * (cost_im > 0.)
-    cost_im = cost_im.sum(0)
+    # compute image-sentence score matrix
+    scores = tensor.dot(im, s.T)
+    diagonal = scores.diagonal()
 
-    cost_s = margin - (s * im).sum(axis=1) + (s * cim).sum(axis=1)
-    cost_s = cost_s * (cost_s > 0.)
-    cost_s = cost_s.sum(0)
+    # compare every diagonal score to scores in its column (i.e, all contrastive images for each sentence)
+    cost_s = tensor.maximum(0, margin - diagonal + scores)
+    # compare every diagonal score to scores in its row (i.e, all contrastive sentences for each image)
+    cost_im = tensor.maximum(0, margin - diagonal.reshape((-1, 1)) + scores)
 
-    cost = cost_im + cost_s
-    return cost
+    # clear diagonals
+    cost_s = fill_diagonal(cost_s, 0)
+    cost_im = fill_diagonal(cost_im, 0)
 
-def _step(cidx, totalcost, s, im, margin):
-    """
-    Step function for iterating over contrastive terms
-    """
-    cs = s[cidx]
-    cim = im[cidx]
-    cost = contrastive_loss(margin, im, s, cim, cs)
-    return totalcost + cost
+    return cost_s.sum() + cost_im.sum()
 
 def build_model(tparams, options):                                                                                           
     """
@@ -64,7 +60,6 @@ def build_model(tparams, options):
     x = tensor.matrix('x', dtype='int64')
     mask = tensor.matrix('mask', dtype='float32')
     im = tensor.matrix('im', dtype='float32')
-    con = tensor.matrix('con', dtype='int64')
 
     n_timesteps = x.shape[0]
     n_samples = x.shape[1]
@@ -83,16 +78,9 @@ def build_model(tparams, options):
     images = get_layer('ff')[1](tparams, im, options, prefix='ff_image', activ='linear')
 
     # Compute loss
-    cost, updates = theano.scan(_step,
-                                sequences=con,
-                                outputs_info=tensor.alloc(0.),
-                                non_sequences = [sents, images, options['margin']],
-                                n_steps=con.shape[0],
-                                profile=False,
-                                strict=True)
-    cost = cost[-1]
-                               
-    return trng, [x, mask, im, con], cost
+    cost = contrastive_loss(options['margin'], images, sents)
+
+    return trng, [x, mask, im], cost
 
 def build_sentence_encoder(tparams, options):
     """
