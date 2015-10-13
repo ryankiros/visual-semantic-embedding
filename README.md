@@ -6,6 +6,10 @@ Images and sentences are mapped into a common vector space, where the sentence r
 
 If you're interested in generating image captions instead, see our follow up project [arctic-captions](https://github.com/kelvinxu/arctic-captions).
 
+## Visualization
+
+Here are [results](http://www.cs.toronto.edu/~rkiros/vse_coco_dev.html) on 1000 images from the MS COCO development set, using the pre-trained model available for download. For each image, we retrieve the highest scoring caption from the training set.
+
 ## Results
 
 Below is a table of results obtained using the code from this repository, comparing the numbers reported in our paper. aR@K is the Recall@K for image annotation (higher is better), while sR@K is the Recall@K for image search (higher is better). Medr is the median rank of the closest ground truth (lower is better).
