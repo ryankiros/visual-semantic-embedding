@@ -4,11 +4,15 @@ Code for the image-sentence ranking methods from "Unifying Visual-Semantic Embed
 
 Images and sentences are mapped into a common vector space, where the sentence representation is computed using LSTM. This project contains training code and pre-trained models for Flickr8K, Flickr30K and MS COCO.
 
+New (Oct 19, 2015): Ability to embed and caption your own images.
+
 If you're interested in generating image captions instead, see our follow up project [arctic-captions](https://github.com/kelvinxu/arctic-captions).
 
 ## Visualization
 
 Here are [results](http://www.cs.toronto.edu/~rkiros/vse_coco_dev.html) on 1000 images from the MS COCO development set, using the pre-trained model available for download. For each image, we retrieve the highest scoring caption from the training set.
+
+See below for details on how to use your own images.
 
 ## Results
 
@@ -43,6 +47,11 @@ This code is written in python. To use it you will need:
 * Python 2.7
 * Theano 0.7
 * A recent version of [NumPy](http://www.numpy.org/) and [SciPy](http://www.scipy.org/)
+
+If you want to caption your own images, you will also need:
+
+* [Lasagne](https://github.com/Lasagne/Lasagne)
+* A version of Theano that Lasagne supports
 
 ## Getting started
 
@@ -113,6 +122,31 @@ Once you are happy, just run the following:
     train.trainer()
     
 As the model trains, it will periodically evaluate on the development set (validFreq) and re-save the model each time performance on the development set increases. Generally you shouldn't need more than 15-20 epochs of training on any of the datasets. Once the models are saved, you can load and evaluate them in the same way as the pre-trained models.
+
+## Using your own images
+
+The script `demo.py` contains code for embedding and captioning your own images. First you need to download the model parameters for the VGG-19 ConvNet. You can download them by running:
+
+    wget https://s3.amazonaws.com/lasagne/recipes/pretrained/imagenet/vgg19.pkl
+    
+Note that this model is for non-commercial use only. Next, open `demo.py` and set the location of where you saved the parameters. In `model.py` specify the location of the pre-trained MS COCO model. Then run the following:
+
+    import demo, tools, datasets
+    net = demo.build_convnet()
+    model = tools.load_model()
+    train = datasets.load_dataset('coco', load_train=True)[0]
+    vectors = tools.encode_sentences(model, train[0], verbose=False)
+    demo.retrieve_captions(model, net, train[0], vectors, 'image.jpg', k=5)
+    
+where image.jpg is some image. The above code will initialize the VGG ConvNet, load the pre-trained embedding model, load the MS COCO training set and then embed the training captions. For a new image, the last line will score the image embedding with each MS COCO training caption and retrieve the top-5 nearest captions. For example, with the first image [here](http://www.cs.toronto.edu/~rkiros/vse_coco_dev.html) I get the following output:
+
+    ['The salad has many different types of vegetables in it .',
+    'A salad is concocted with broccoli , potatoes and tomatoes .',
+    'A table filled with greens and lots of vegetables .',
+    'Pasta salad with tomatoes , broccoli , beans and sausage in a bowl..',
+    'There is a lot if veggies that are in the tray']
+    
+Note that since this model was trained on MS COCO, if you use images that are much different than the training data you might get some funny results. If you want to do the reverse task (retrieve images for captions) it should be very straightforward to modify the code to do so.
 
 ## Using different datasets and features
 
