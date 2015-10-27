@@ -12,7 +12,6 @@ def adam(lr, tparams, grads, inp, cost):
 
     f_grad_shared = theano.function(inp, cost, updates=gsup, profile=False)
 
-    lr0 = 0.0002
     b1 = 0.1
     b2 = 0.001
     e = 1e-8
@@ -23,7 +22,7 @@ def adam(lr, tparams, grads, inp, cost):
     i_t = i + 1.
     fix1 = 1. - b1**(i_t)
     fix2 = 1. - b2**(i_t)
-    lr_t = lr0 * (tensor.sqrt(fix2) / fix1)
+    lr_t = lr * (tensor.sqrt(fix2) / fix1)
 
     for p, g in zip(tparams.values(), gshared):
         m = theano.shared(p.get_value() * 0.)

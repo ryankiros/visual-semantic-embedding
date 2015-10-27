@@ -42,6 +42,7 @@ def trainer(data='coco',  #f8k, f30k, coco
             batch_size = 128,
             saveto='/ais/gobi3/u/rkiros/uvsmodels/coco.npz',
             validFreq=100,
+            lrate=0.0002,
             reload_=False):
 
     # Model options
@@ -61,6 +62,7 @@ def trainer(data='coco',  #f8k, f30k, coco
     model_options['batch_size'] = batch_size
     model_options['saveto'] = saveto
     model_options['validFreq'] = validFreq
+    model_options['lrate'] = lrate
     model_options['reload_'] = reload_
 
     print model_options
@@ -155,7 +157,6 @@ def trainer(data='coco',  #f8k, f30k, coco
     train_iter = homogeneous_data.HomogeneousData([train[0], train[1]], batch_size=batch_size, maxlen=maxlen_w)
 
     uidx = 0
-    lrate = 0.01
     curr = 0.
     n_samples = 0
     
