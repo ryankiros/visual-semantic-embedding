@@ -22,8 +22,9 @@ def init_params(options):
     params['Wemb'] = norm_weight(options['n_words'], options['dim_word'])
 
     # Sentence encoder
-    params = get_layer(options['encoder'])[0](options, params, prefix='encoder',
-                                              nin=options['dim_word'], dim=options['dim'])
+    if options['encoder'] != 'bow':
+        params = get_layer(options['encoder'])[0](options, params, prefix='encoder',
+                                                  nin=options['dim_word'], dim=options['dim'])
 
     # Image encoder
     params = get_layer('ff')[0](options, params, prefix='ff_image', nin=options['dim_image'], nout=options['dim'])
@@ -68,10 +69,13 @@ def build_model(tparams, options):
     emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps, n_samples, options['dim_word']])
 
     # Encode sentences (source)
-    proj = get_layer(options['encoder'])[1](tparams, emb, None, options,
-                                            prefix='encoder',
-                                            mask=mask)
-    sents = proj[0][-1]
+    if options['encoder'] == 'bow':
+        sents = (emb * mask[:,:,None]).sum(0)
+    else:
+        proj = get_layer(options['encoder'])[1](tparams, emb, None, options,
+                                                prefix='encoder',
+                                                mask=mask)
+        sents = proj[0][-1]
     sents = l2norm(sents)
 
     # Encode images (source)
@@ -101,10 +105,13 @@ def build_sentence_encoder(tparams, options):
     emb = tparams['Wemb'][x.flatten()].reshape([n_timesteps, n_samples, options['dim_word']])
 
     # Encode sentences
-    proj = get_layer(options['encoder'])[1](tparams, emb, None, options,
-                                            prefix='encoder',
-                                            mask=mask)
-    sents = proj[0][-1]
+    if options['encoder'] == 'bow':
+        sents = (emb * mask[:,:,None]).sum(0)
+    else:
+        proj = get_layer(options['encoder'])[1](tparams, emb, None, options,
+                                                prefix='encoder',
+                                                mask=mask)
+        sents = proj[0][-1]
     sents = l2norm(sents)
 
     return trng, [x, mask], sents
