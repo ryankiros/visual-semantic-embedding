@@ -104,7 +104,7 @@ Open `train.py` and specify the hyperparameters that you would like. Below we de
 * dim_image: The dimensionality of the image features. This will be 4096 for VGG.
 * dim_word: The dimensionality of the learned word embeddings.
 * ncon: The number of contrastive (negative) examples for computing the loss.
-* encoder: The type of RNN to use. Only supports gru at the moment.
+* encoder: Either 'gru' or 'bow'
 * max_epochs: The number of epochs used for training.
 * dispFreq: How often to display training progress.
 * decay_c: The weight decay hyperparameter.
@@ -116,7 +116,7 @@ Open `train.py` and specify the hyperparameters that you would like. Below we de
 * validFreq: How often to evaluate on the development set.
 * reload_: Whether to reload a previously trained model.
 
-Once you are happy, just run the following:
+Note that if encoder is 'bow', then dim and dim_word need to be the same dimension. Once you are happy, just run the following:
 
     import train
     train.trainer()
