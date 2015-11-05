@@ -55,6 +55,63 @@ def retrieve_captions(model, net, captions, cvecs, file_name, k=5):
 
     return sentences
 
+def regularities(model, net, captions, imvecs, file_name, negword, posword, k=5, rerank=False):
+    """
+    This is an example of how the 'Multimodal Lingustic Regularities' was done.
+    Returns nearest neighbours to 'image - negword + posword'
+
+    model: the embedding model, with encoder='bow'
+    net: VGG ConvNet
+    captions: a list of sentences
+    imvecs: the corresponding image embeddings to each sentence in 'captions'
+    file_name: location of the query image
+    negword: the word to subtract
+    posword: the word to add
+    k: number of results to return
+    rerank: whether to rerank results based on their mean (to push down outliers)
+
+    'captions' is used only as a reference, to avoid loading/displaying images.
+
+    Returns:
+    The top k closest sentences in captions
+    The indices of the top k captions
+
+    Note that in our paper we used the SBU dataset (not COCO)
+    """
+    # Load the image
+    im = load_image(file_name)
+
+    # Run image through convnet
+    query = compute_features(net, im).flatten()
+    query /= norm(query)
+
+    # Embed words
+    pos = tools.encode_sentences(model, [posword], verbose=False)
+    neg = tools.encode_sentences(model, [negword], verbose=False)
+
+    # Embed image
+    query = tools.encode_images(model, query[None,:])
+
+    # Transform
+    feats = query - neg + pos
+    feats /= norm(feats)
+
+    # Compute nearest neighbours
+    scores = numpy.dot(feats, imvecs.T).flatten()
+    sorted_args = numpy.argsort(scores)[::-1]
+    sentences = [captions[a] for a in sorted_args[:k]]
+
+    # Re-rank based on the mean of the returned results
+    if rerank:
+        nearest = imvecs[sorted_args[:k]]
+        meanvec = numpy.mean(nearest, 0)[None,:]
+        scores = numpy.dot(nearest, meanvec.T).flatten()
+        sargs = numpy.argsort(scores)[::-1]
+        sentences = [sentences[a] for a in sargs[:k]]
+        sorted_args = [sorted_args[a] for a in sargs[:k]]
+
+    return sentences, sorted_args[:k]    
+
 def compute_fromfile(net, loc, base_path='/ais/gobi3/u/rkiros/coco/images/val2014/'):
     """
     Compute image features from a text file of locations
