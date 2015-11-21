@@ -16,7 +16,7 @@ See below for details on how to use your own images.
 
 ## Results
 
-Below is a table of results obtained using the code from this repository, comparing the numbers reported in our paper. aR@K is the Recall@K for image annotation (higher is better), while sR@K is the Recall@K for image search (higher is better). Medr is the median rank of the closest ground truth (lower is better).
+Below is a table of results obtained using the code from this repository, comparing the numbers reported in our paper. aR@K is the Recall@K for image annotation (higher is better), while sR@K is the Recall@K for image search (higher is better). Medr is the median rank of the closest ground truth (lower is better). NOTE: these results use features from 1 image crop. Some papers report results using average features from 10 crops, which gives better results. 
 
 **Flickr8K**
 
